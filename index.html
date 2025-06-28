@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Festival Music Graph - Popoto.js</title>
+
+    <!-- Popoto dan Font Awesome CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/popoto/dist/popoto.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background-attachment: fixed;
+        margin: 0;
+        padding: 20px;
+        color: #1a1a1a;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.3) 0%, transparent 50%);
+        z-index: -1;
+        animation: backgroundShift 20s ease-in-out infinite;
+      }
+
+      @keyframes backgroundShift {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .main-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 
+          0 25px 50px rgba(0, 0, 0, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: containerFloat 6s ease-in-out infinite;
+      }
+
+      @keyframes containerFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+      }
+
+      .header {
+        background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: 
+          radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%),
+          linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+        animation: headerGlow 8s linear infinite;
+      }
+
+      @keyframes headerGlow {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 3rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header p {
+        margin: 15px 0 0 0;
+        font-size: 1.2rem;
+        opacity: 0.95;
+        position: relative;
+        z-index: 1;
+        font-weight: 400;
+      }
+
+      .ppt-section-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: #ecf0f1;
+        padding: 20px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-left: 5px solid #e74c3c;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .ppt-section-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+      }
+
+      .ppt-section-header:hover::before {
+        left: 100%;
+      }
+
+      .ppt-section-header i {
+        font-size: 1.3rem;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      #popoto-taxonomy {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px 10px;
+        font-size: 0.95rem;
+        border-bottom: 2px solid #dee2e6;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        position: relative;
+      }
+
+      .taxonomy-label {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 
+          0 4px 15px rgba(108, 92, 231, 0.3),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .taxonomy-label::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+
+      .taxonomy-label:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 
+          0 8px 25px rgba(108, 92, 231, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+      }
+
+      .taxonomy-label:hover::before {
+        left: 100%;
+      }
+
+      .ppt-container-graph {
+        height: 650px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ppt-container-graph::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+          radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(255, 107, 107, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.08) 0%, transparent 50%),
+          linear-gradient(135deg, transparent 0%, rgba(108, 92, 231, 0.02) 50%, transparent 100%);
+        pointer-events: none;
+        animation: graphBackground 15s ease-in-out infinite;
+      }
+
+      @keyframes graphBackground {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+
+      .ppt-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-left: 8px;
+        color: #2c3e50;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+      }
+
+      .ppt-count {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-left: 8px;
+        color: #e74c3c;
+        background: rgba(231, 76, 60, 0.1);
+        padding: 6px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        animation: countUpdate 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+      }
+
+      @keyframes countUpdate {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+        100% { transform: scale(1); }
+      }
+
+      #popoto-results {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        padding: 30px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-top: 3px solid #e74c3c;
+        max-height: 450px;
+        overflow-y: auto;
+        position: relative;
+      }
+
+      #popoto-results::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      #popoto-results::-webkit-scrollbar-track {
+        background: rgba(241, 241, 241, 0.5);
+        border-radius: 5px;
+      }
+
+      #popoto-results::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+        border-radius: 5px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+      }
+
+      #popoto-results::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #e74c3c, #45b7d1);
+        background-clip: padding-box;
+      }
+
+      #popoto-cypher {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: #ecf0f1;
+        padding: 25px 30px;
+        font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+        font-size: 0.9rem;
+        border-top: 3px solid #3498db;
+        max-height: 250px;
+        overflow-y: auto;
+        position: relative;
+      }
+
+      #popoto-cypher::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+          radial-gradient(circle at 10% 10%, rgba(52, 152, 219, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 90% 90%, rgba(155, 89, 182, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      .result-item {
+        background: rgba(255, 255, 255, 0.9);
+        margin: 15px 0;
+        padding: 20px;
+        border-radius: 15px;
+        border-left: 5px solid #3498db;
+        box-shadow: 
+          0 4px 20px rgba(0, 0, 0, 0.08),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+      }
+
+      .result-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+        transition: left 0.6s ease;
+      }
+
+      .result-item:hover {
+        transform: translateX(8px) translateY(-2px);
+        box-shadow: 
+          0 8px 30px rgba(0, 0, 0, 0.12),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+        border-left-color: #e74c3c;
+      }
+
+      .result-item:hover::before {
+        left: 100%;
+      }
+
+      .ppt-node {
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+        transition: all 0.3s ease;
+      }
+
+      .ppt-node:hover {
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+      }
+
+      .loading {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+        font-size: 1.2rem;
+        color: #666;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      }
+
+      .loading::after {
+        content: "";
+        width: 30px;
+        height: 30px;
+        margin-top: 20px;
+        border: 3px solid #e3e3e3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .node-icon {
+        font-size: 28px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+
+      .node-label {
+        font-size: 13px;
+        font-weight: 600;
+        fill: #2c3e50;
+        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
+        font-family: "Inter", sans-serif;
+      }
+
+      .node-sublabel {
+        font-size: 11px;
+        fill: #7f8c8d;
+        font-style: italic;
+        font-family: "Inter", sans-serif;
+      }
+
+      .count-badge {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-left: 15px;
+        box-shadow: 
+          0 4px 12px rgba(231, 76, 60, 0.3),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        display: inline-block;
+        min-width: 40px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .count-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 
+          0 6px 16px rgba(231, 76, 60, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.2);
+      }
+
+      /* Empty state styling */
+      .empty-state {
+        text-align: center;
+        padding: 5px 40px;
+        color: #7f8c8d;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 15px;
+        margin: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 30px;
+        opacity: 0.3;
+        background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        font-weight: 600;
+      }
+
+      .empty-state p {
+        font-size: 1rem;
+        line-height: 1.6;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      /* Error state styling */
+      .error-state {
+        text-align: center;
+        padding: 60px 40px;
+        color: #e74c3c;
+        background: linear-gradient(135deg, #fdf2f2 0%, #ffffff 100%);
+        border-radius: 15px;
+        margin: 20px;
+        box-shadow: 0 4px 20px rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.1);
+      }
+
+      .error-state i {
+        font-size: 4rem;
+        margin-bottom: 30px;
+        opacity: 0.7;
+      }
+
+      .error-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .error-state p {
+        font-size: 1rem;
+        line-height: 1.6;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .error-details {
+        font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+        background: rgba(231, 76, 60, 0.05);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border: 1px solid rgba(231, 76, 60, 0.1);
+        color: #c0392b;
+        font-size: 0.9rem;
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .main-container {
+          margin: 10px;
+          border-radius: 15px;
+        }
+
+        .header {
+          padding: 30px 20px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .ppt-section-header, #popoto-taxonomy {
+          padding: 15px 20px;
+        }
+
+        #popoto-results, #popoto-cypher {
+          padding: 20px;
+        }
+
+        .ppt-container-graph {
+          height: 500px;
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-item {
+        animation: fadeInUp 0.5s ease-out;
+      }
+
+      .result-item:nth-child(even) {
+        animation-delay: 0.1s;
+      }
+
+      .result-item:nth-child(odd) {
+        animation-delay: 0.05s;
+      }
+    </style>
+  </head>
+
+  <body class="ppt-body">
+    <div class="main-container">
+      <!-- Header -->
+      <div class="header">
+        <h1><i class="fas fa-music"></i> Festival Music Graph</h1>
+        <p>Eksplorasi Data Festival Musik UAS Praktikum Basis Data Grafik</p>
+      </div>
+
+      <section class="ppt-section-main">
+        <!-- Area graph -->
+        <div class="ppt-container-graph">
+          <nav id="popoto-taxonomy" class="ppt-taxo-nav">
+            <div class="taxonomy-label">
+              <i class="fas fa-filter"></i> Filter Data
+            </div>
+          </nav>
+          <div id="popoto-graph" class="ppt-div-graph"></div>
+        </div>
+
+        <!-- Panel Cypher -->
+        <div class="ppt-section-header">
+          <i class="fas fa-code"></i>
+          <span class="ppt-header-span">Cypher Query</span>
+        </div>
+        <div id="popoto-cypher" class="ppt-container-cypher"></div>
+
+        <!-- Hasil -->
+        <div class="ppt-section-header">
+          <i class="fas fa-chart-bar"></i>
+          <span>Hasil Pencarian</span>
+          <span id="result-total-count" class="count-badge">0</span>
+        </div>
+        <div id="popoto-results" class="ppt-container-results"></div>
+      </section>
+    </div>
+
+    <!-- Script libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/neo4j-driver-lite/lib/browser/neo4j-lite-web.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popoto/dist/popoto.min.js"></script>
+
+    <script>
+      // Global variables for tracking
+      let currentResultCount = 0;
+      let isInitialized = false;
+
+      // Koneksi ke Neo4j
+      const driver = neo4j.driver(
+        "bolt://localhost:7687",
+        neo4j.auth.basic("neo4j", "12345678"),
+        { disableLosslessIntegers: true }
+      );
+
+      popoto.runner.DRIVER = driver;
+
+      popoto.query.COLLECT_RELATIONS_WITH_VALUES = false;
+      popoto.graph.DISABLE_AUTO_EXPAND_RELATIONS = true;
+      popoto.graph.MAX_DISPLAYED_NODES = 50;
+      popoto.graph.MAX_RELATIONS_PER_NODE = 10;
+
+      popoto.provider.node.Provider = {
+        Event: {
+          returnAttributes: ["nama_event", "tahun_mulai"],
+          constraintAttribute: "id_event",
+          autoExpandRelations: false,
+          displayAttribute: "nama_event",
+        },
+        Artis: {
+          returnAttributes: ["headliner", "genre"],
+          constraintAttribute: "id_artis",
+          autoExpandRelations: false,
+          displayAttribute: "headliner",
+        },
+        Lokasi: {
+          returnAttributes: ["lokasi", "negara"],
+          constraintAttribute: "id_lokasi",
+          autoExpandRelations: false,
+          displayAttribute: "lokasi",
+        },
+        Penyelenggara: {
+          returnAttributes: [
+            "penyelenggara",
+            "jumlah_penonton",
+            "bulan_pelaksanaan",
+          ],
+          constraintAttribute: "id_penyelenggara",
+          autoExpandRelations: false,
+          displayAttribute: "penyelenggara",
+        },
+      };
+
+      // Function untuk update count dengan validasi
+      function updateResultCount(count) {
+        if (typeof count !== "number" || isNaN(count) || count < 0) {
+          count = 0;
+        }
+
+        currentResultCount = count;
+        const countElement = document.getElementById("result-total-count");
+
+        if (countElement) {
+          countElement.textContent = count.toString();
+          countElement.style.animation = "countUpdate 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
+
+          setTimeout(() => {
+            if (countElement.style) {
+              countElement.style.animation = "";
+            }
+          }, 500);
+        }
+
+        console.log("Result count updated:", count);
+      }
+
+      // Override popoto result count handler
+      popoto.result.onTotalResultCount = function (callback) {
+        popoto.result.resultCountListeners.push(function (count) {
+          updateResultCount(count);
+          if (typeof callback === "function") {
+            callback(count);
+          }
+        });
+      };
+
+      popoto.result.resultCountListeners = [];
+
+      popoto.result.onTotalResultCount(function (count) {
+        updateResultCount(count);
+      });
+
+      // Function untuk mendapatkan icon berdasarkan label
+      function getNodeIcon(label) {
+        const icons = {
+          Event: "fas fa-calendar-alt",
+          Artis: "fas fa-microphone",
+          Lokasi: "fas fa-map-marker-alt",
+          Penyelenggara: "fas fa-building",
+        };
+        return icons[label] || "fas fa-circle";
+      }
+
+      // Function untuk mendapatkan warna berdasarkan label
+      function getNodeColor(label) {
+        const colors = {
+          Event: "#ff6b6b",
+          Artis: "#4ecdc4",
+          Lokasi: "#45b7d1",
+          Penyelenggara: "#f093fb",
+        };
+        return colors[label] || "#95a5a6";
+      }
+
+      // Function untuk mendapatkan nama yang akan ditampilkan
+      function getDisplayName(node) {
+        if (node.attributes) {
+          if (node.attributes.nama_event) return node.attributes.nama_event;
+          if (node.attributes.headliner) return node.attributes.headliner;
+          if (node.attributes.lokasi) return node.attributes.lokasi;
+          if (node.attributes.penyelenggara)
+            return node.attributes.penyelenggara;
+        }
+        return node.label || "Unknown";
+      }
+
+      // Function untuk mendapatkan info tambahan
+      function getSubLabel(node) {
+        if (node.attributes) {
+          if (node.attributes.genre) return node.attributes.genre;
+          if (node.attributes.negara) return node.attributes.negara;
+          if (node.attributes.bulan_pelaksanaan)
+            return node.attributes.bulan_pelaksanaan;
+          if (node.attributes.tahun_mulai) return node.attributes.tahun_mulai;
+        }
+        return null;
+      }
+
+      let renderInProgress = false;
+
+      popoto.graph.nodeRenderer = {
+        render: function (nodeSelection) {
+          if (renderInProgress) return;
+          renderInProgress = true;
+
+          const iconSize = 75;
+
+          nodeSelection.each(function (d) {
+            const node = d3.select(this);
+
+            if (node.select(".node-background").size() > 0) {
+              renderInProgress = false;
+              return;
+            }
+
+            node.selectAll("*").remove();
+
+            const displayName = getDisplayName(d);
+            const subLabel = getSubLabel(d);
+            const color = getNodeColor(d.label);
+
+            const backgroundCircle = node
+              .append("circle")
+              .attr("class", "node-background")
+              .attr("r", iconSize / 2 + 8)
+              .style("fill", `url(#gradient-${d.label})`)
+              .style("stroke", "#fff")
+              .style("stroke-width", 4)
+              .style("filter", "drop-shadow(0 6px 12px rgba(0,0,0,0.15))");
+
+            // Define gradients for each node type
+            const defs = node.append("defs");
+            const gradient = defs.append("linearGradient")
+              .attr("id", `gradient-${d.label}`)
+              .attr("x1", "0%").attr("y1", "0%")
+              .attr("x2", "100%").attr("y2", "100%");
+
+            const gradientColors = {
+              Event: ["#ff6b6b", "#e55656"],
+              Artis: ["#4ecdc4", "#45b7b8"],
+              Lokasi: ["#45b7d1", "#3c9bc1"],
+              Penyelenggara: ["#f093fb", "#d67ed9"]
+            };
+
+            const colors = gradientColors[d.label] || ["#95a5a6", "#7f8c8d"];
+            gradient.append("stop").attr("offset", "0%").attr("stop-color", colors[0]);
+            gradient.append("stop").attr("offset", "100%").attr("stop-color", colors[1]);
+
+            // Inner highlight circle
+            node
+              .append("circle")
+              .attr("class", "node-highlight")
+              .attr("r", iconSize / 2 + 3)
+              .style("fill", "none")
+              .style("stroke", "rgba(255, 255, 255, 0.3)")
+              .style("stroke-width", 2);
+
+            const iconText = node
+              .append("text")
+              .attr("text-anchor", "middle")
+              .attr("y", 10)
+              .attr("class", "node-icon")
+              .style("font-family", "Font Awesome 6 Free")
+              .style("font-weight", "900")
+              .style("font-size", "28px")
+              .style("fill", "#fff")
+              .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.3))");
+
+            // Set icon berdasarkan label
+            switch (d.label) {
+              case "Event":
+                iconText.text("\uf073");
+                break;
+              case "Artis":
+                iconText.text("\uf3c1");
+                break;
+              case "Lokasi":
+                iconText.text("\uf3c5");
+                break;
+              case "Penyelenggara":
+                iconText.text("\uf1ad");
+                break;
+              default:
+                iconText.text("\uf111");
+            }
+
+            const labelBackground = node
+              .append("rect")
+              .attr("x", -60)
+              .attr("y", iconSize / 2 + 10)
+              .attr("width", 120)
+              .attr("height", 20)
+              .attr("rx", 10)
+              .style("fill", "rgba(255, 255, 255, 0.9)")
+              .style("stroke", "rgba(0, 0, 0, 0.1)")
+              .style("stroke-width", 1)
+              .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.1))");
+
+            node
+              .append("text")
+              .attr("text-anchor", "middle")
+              .attr("y", iconSize / 2 + 24)
+              .attr("class", "node-label")
+              .style("font-size", "13px")
+              .style("font-weight", "600")
+              .style("fill", "#2c3e50")
+              .style("font-family", "Inter, sans-serif")
+              .text(
+                displayName.length > 12
+                  ? displayName.substring(0, 12) + "..."
+                  : displayName
+              );
+
+            if (subLabel) {
+              const sublabelBackground = node
+                .append("rect")
+                .attr("x", -50)
+                .attr("y", iconSize / 2 + 32)
+                .attr("width", 100)
+                .attr("height", 16)
+                .attr("rx", 8)
+                .style("fill", "rgba(127, 140, 141, 0.1)")
+                .style("stroke", "rgba(127, 140, 141, 0.2)")
+                .style("stroke-width", 1);
+
+              node
+                .append("text")
+                .attr("text-anchor", "middle")
+                .attr("y", iconSize / 2 + 43)
+                .attr("class", "node-sublabel")
+                .style("font-size", "11px")
+                .style("fill", "#7f8c8d")
+                .style("font-style", "italic")
+                .style("font-family", "Inter, sans-serif")
+                .text(
+                  subLabel.length > 15
+                    ? subLabel.substring(0, 15) + "..."
+                    : subLabel
+                );
+            }
+
+            // Hover effects
+            node
+              .on("mouseover", function() {
+                d3.select(this).select(".node-background")
+                  .transition()
+                  .duration(200)
+                  .attr("r", iconSize / 2 + 12)
+                  .style("filter", "drop-shadow(0 8px 16px rgba(0,0,0,0.2))");
+              })
+              .on("mouseout", function() {
+                d3.select(this).select(".node-background")
+                  .transition()
+                  .duration(200)
+                  .attr("r", iconSize / 2 + 8)
+                  .style("filter", "drop-shadow(0 6px 12px rgba(0,0,0,0.15))");
+              });
+          });
+
+          renderInProgress = false;
+        },
+      };
+
+      // Custom result display dengan proper counting dan enhanced styling
+      popoto.result.displayResults = function (results) {
+        const resultsContainer = document.getElementById("popoto-results");
+
+        updateResultCount(results.length);
+
+        if (results.length === 0) {
+          resultsContainer.innerHTML =
+            '<div class="empty-state">' +
+            '<i class="fas fa-search"></i>' +
+            "<h3>Tidak ada hasil ditemukan</h3>" +
+            "<p>Coba ubah filter atau pilih node yang berbeda untuk mendapatkan hasil yang sesuai</p>" +
+            "</div>";
+          return;
+        }
+
+        let html = "";
+        results.forEach(function (result, index) {
+          html += '<div class="result-item">';
+          html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
+          html += `<strong style="color: #2c3e50; font-size: 1.1rem;">#${index + 1}</strong>`;
+          html += `<span style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">Hasil</span>`;
+          html += `</div>`;
+
+          Object.keys(result).forEach(function (key) {
+            if (result[key] !== null && result[key] !== undefined) {
+              html += `<div style="margin: 8px 0; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">`;
+              html += `<strong style="color: #34495e; font-weight: 600;">${key}:</strong> `;
+              html += `<span style="color: #2c3e50; margin-left: 8px;">${result[key]}</span>`;
+              html += `</div>`;
+            }
+          });
+
+          html += "</div>";
+        });
+
+        resultsContainer.innerHTML = html;
+
+        // Add staggered animation to result items
+        const resultItems = resultsContainer.querySelectorAll('.result-item');
+        resultItems.forEach((item, index) => {
+          item.style.opacity = '0';
+          item.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            item.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+      };
+
+      // Override result count listeners untuk memastikan count yang benar
+      const originalResultCountListeners =
+        popoto.result.resultCountListeners || [];
+      popoto.result.resultCountListeners = [];
+
+      // Add custom result count listener
+      popoto.result.resultCountListeners.push(function (count) {
+        console.log("Raw count received:", count);
+        updateResultCount(count);
+      });
+
+      // Merge dengan listeners yang sudah ada
+      originalResultCountListeners.forEach(function (listener) {
+        if (typeof listener === "function") {
+          popoto.result.resultCountListeners.push(listener);
+        }
+      });
+
+      // Enhanced loading state
+      function showLoadingState() {
+        document.getElementById("popoto-results").innerHTML =
+          '<div class="loading">' +
+          '<i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 20px; color: #3498db;"></i>' +
+          '<div>Memuat data...</div>' +
+          '</div>';
+      }
+
+      // Enhanced error state
+      function showErrorState(error) {
+        const errorMessage = error.message || 'Terjadi kesalahan yang tidak diketahui';
+        document.getElementById("popoto-results").innerHTML =
+          '<div class="error-state">' +
+          '<i class="fas fa-exclamation-triangle"></i>' +
+          "<h3>Koneksi ke Neo4j Gagal</h3>" +
+          "<p>Pastikan Neo4j server berjalan di localhost:7687 dengan kredensial yang benar</p>" +
+          `<div class="error-details">${errorMessage}</div>` +
+          "</div>";
+      }
+
+      // Initialize dengan error handling yang lebih baik
+      showLoadingState();
+      
+      driver
+        .verifyConnectivity()
+        .then(function () {
+          if (isInitialized) return;
+
+          console.log("Koneksi Neo4j berhasil!");
+
+          // Reset count
+          updateResultCount(0);
+
+          // Initialize popoto dengan delay untuk memastikan DOM ready
+          setTimeout(() => {
+            try {
+              document.getElementById("popoto-results").innerHTML = 
+                '<div class="empty-state">' +
+                '<i class="fas fa-mouse-pointer"></i>' +
+                "<h3>Siap untuk eksplorasi</h3>" +
+                "<p>Klik pada node di graph untuk mulai menjelajahi data festival musik</p>" +
+                "</div>";
+
+              popoto.start("Event");
+              isInitialized = true;
+              console.log("Popoto initialized successfully");
+              
+              const container = document.querySelector('.main-container');
+              container.style.opacity = '0';
+              container.style.transform = 'translateY(20px)';
+              setTimeout(() => {
+                container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+              }, 100);
+
+            } catch (error) {
+              console.error("Error initializing Popoto:", error);
+              showErrorState(error);
+            }
+          }, 1000);
+        })
+        .catch(function (error) {
+          console.error("Error koneksi Neo4j:", error);
+          updateResultCount(0);
+          showErrorState(error);
+        });
+
+      // Debug helper
+      window.debugCount = function () {
+        console.log("Current result count:", currentResultCount);
+        console.log(
+          "Count element:",
+          document.getElementById("result-total-count")
+        );
+        return currentResultCount;
+      };
+
+      // Add keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+          e.preventDefault();
+          if (isInitialized) {
+            showLoadingState();
+            setTimeout(() => {
+              try {
+                popoto.graph.clearGraph();
+                popoto.start("Event");
+                console.log("Graph refreshed");
+              } catch (error) {
+                console.error("Error refreshing graph:", error);
+                showErrorState(error);
+              }
+            }, 500);
+          }
+        }
+      });
+
+      // Add smooth scroll behavior for results
+      document.getElementById('popoto-results').addEventListener('scroll', function() {
+        const scrolled = this.scrollTop;
+        const maxScroll = this.scrollHeight - this.clientHeight;
+        const scrollPercent = scrolled / maxScroll;
+        
+        // Add scroll indicator
+        if (!document.querySelector('.scroll-indicator')) {
+          const indicator = document.createElement('div');
+          indicator.className = 'scroll-indicator';
+          indicator.style.cssText = `
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: rgba(52, 152, 219, 0.2);
+            pointer-events: none;
+          `;
+          
+          const progress = document.createElement('div');
+          progress.style.cssText = `
+            width: 100%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            transition: height 0.2s ease;
+            border-radius: 2px;
+          `;
+          
+          indicator.appendChild(progress);
+          this.style.position = 'relative';
+          this.appendChild(indicator);
+        }
+        
+        const progress = document.querySelector('.scroll-indicator div');
+        if (progress) {
+          progress.style.height = (scrollPercent * 100) + '%';
+        }
+      });
+    </script>
+  </body>
+</html>
